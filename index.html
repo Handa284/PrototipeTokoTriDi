@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko TriDi - Prototipe </title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        .view { display: none; }
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .page-section, .seller-page-section, .login-form-view {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active { border-bottom-color: #4f46e5; color: #111827; font-weight: 600; }
+        .tab-inactive { border-bottom-color: transparent; color: #6b7280; }
+        
+        .sidebar-active {
+             background-color: #f3f4f6; /* bg-gray-100 */
+             color: #1f2937; /* text-gray-800 */
+             border-left: 4px solid #4f46e5; /* border-indigo-500 */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- App Views Container -->
+    <div id="app-container">
+
+        <!-- Login View -->
+        <div id="view-login" class="view">
+            <canvas id="bg-canvas"></canvas>
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 transform transition-all">
+                    <!-- Login Form -->
+                    <div id="login-form-view" class="login-form-view space-y-6">
+                        <div class="text-center"><h1 class="text-3xl font-bold text-indigo-600">Toko TriDi</h1><p class="mt-2 text-gray-700">Selamat datang kembali!</p></div>
+                        <div class="flex border-b border-gray-900/10">
+                            <button id="tab-pengguna" class="tab-active flex-1 py-3 text-center border-b-2 transition-colors duration-300">Pengguna</button>
+                            <button id="tab-penjual" class="tab-inactive flex-1 py-3 text-center border-b-2 transition-colors duration-300">Penjual</button>
+                        </div>
+                        <form class="space-y-6">
+                            <div><label for="email" class="text-sm font-medium text-gray-700">Alamat Email</label><input type="email" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white/70"></div>
+                            <div>
+                                <div class="flex items-center justify-between"><label for="password" class="text-sm font-medium text-gray-700">Kata Sandi</label><a href="#" class="text-sm text-indigo-600 hover:text-indigo-500" data-view="forgot">Lupa Kata Sandi?</a></div>
+                                <input type="password" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white/70">
+                            </div>
+                            <div><button type="submit" id="login-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Masuk</button></div>
+                        </form>
+                        <p class="text-center text-sm text-gray-600">Belum punya akun? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500" data-view="register">Daftar di sini</a></p>
+                    </div>
+                    <!-- Register Form -->
+                    <div id="register-form-view" class="login-form-view space-y-6">
+                        <div class="text-center"><h1 class="text-3xl font-bold text-indigo-600">Buat Akun Baru</h1><p class="mt-2 text-gray-600">Bergabunglah sekarang.</p></div>
+                        <form class="space-y-4">
+                            <div><label class="text-sm font-medium text-gray-700">Nama Lengkap</label><input type="text" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white/70"></div>
+                            <div><label class="text-sm font-medium text-gray-700">Alamat Email</label><input type="email" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white/70"></div>
+                            <div><label class="text-sm font-medium text-gray-700">Kata Sandi</label><input type="password" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white/70"></div>
+                            <div><button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Daftar</button></div>
+                        </form>
+                        <p class="text-center text-sm text-gray-600">Sudah punya akun? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500" data-view="login">Masuk di sini</a></p>
+                    </div>
+                    <!-- Forgot Password Form -->
+                    <div id="forgot-form-view" class="login-form-view space-y-6">
+                        <div class="text-center"><h1 class="text-3xl font-bold text-indigo-600">Lupa Kata Sandi</h1><p class="mt-2 text-gray-600">Kami akan kirim tautan reset.</p></div>
+                        <form class="space-y-6">
+                            <div><label class="text-sm font-medium text-gray-700">Alamat Email</label><input type="email" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white/70"></div>
+                            <div><button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Kirim Tautan</button></div>
+                        </form>
+                        <p class="text-center text-sm text-gray-600">Ingat kata sandi? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500" data-view="login">Kembali ke Login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buyer/User View -->
+        <div id="view-buyer" class="view">
+            <header class="bg-white shadow-md sticky top-0 z-40">
+                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-indigo-600">Toko TriDi</h1>
+                    <nav class="hidden md:flex space-x-8" id="buyer-nav">
+                        <a href="#" class="nav-link text-indigo-600 font-semibold" data-page="beranda">Beranda</a>
+                        <a href="#" class="nav-link text-gray-600 hover:text-indigo-600" data-page="kategori">Kategori</a>
+                        <a href="#" class="nav-link text-gray-600 hover:text-indigo-600" data-page="tentang">Tentang Kami</a>
+                    </nav>
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="nav-link relative text-gray-600 hover:text-indigo-600" data-page="keranjang">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+                        </a>
+                        <button class="logout-btn text-sm text-gray-500 hover:text-indigo-600">Logout</button>
+                    </div>
+                </div>
+            </header>
+            <main class="container mx-auto px-6 py-12">
+                <section id="page-beranda" class="page-section"></section>
+                <section id="page-kategori" class="page-section"></section>
+                <section id="page-keranjang" class="page-section"></section>
+                <section id="page-tentang" class="page-section"></section>
+            </main>
+            <footer class="bg-white mt-16 border-t"><div class="container mx-auto px-6 py-8 text-center text-gray-500"><p>&copy; 2025 Toko TriDi. Diberdayakan untuk UMKM Indonesia.</p></div></footer>
+        </div>
+
+        <!-- Seller View -->
+        <div id="view-seller" class="view">
+            <div class="flex h-screen bg-gray-100">
+                <div class="hidden md:flex flex-col w-64 bg-white shadow-lg">
+                    <div class="flex items-center justify-center h-20 shadow-md"><h1 class="text-2xl font-bold text-indigo-600">Toko TriDi</h1></div>
+                    <ul class="flex flex-col py-4" id="seller-nav">
+                        <li><a href="#" class="seller-nav-link flex flex-row items-center h-12" data-page="dasbor"><span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span><span class="text-sm font-medium">Dasbor</span></a></li>
+                        <li><a href="#" class="seller-nav-link flex flex-row items-center h-12" data-page="produk"><span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span><span class="text-sm font-medium">Produk</span></a></li>
+                        <li><a href="#" class="seller-nav-link flex flex-row items-center h-12" data-page="pesanan"><span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg></span><span class="text-sm font-medium">Pesanan</span></a></li>
+                        <li><a href="#" class="seller-nav-link flex flex-row items-center h-12" data-page="pengaturan"><span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></span><span class="text-sm font-medium">Pengaturan</span></a></li>
+                    </ul>
+                </div>
+                <div class="flex flex-col flex-1 overflow-y-auto">
+                    <div class="flex items-center justify-between h-20 px-6 bg-white border-b">
+                        <h2 id="seller-page-title" class="text-2xl font-semibold text-gray-800"></h2>
+                        <div class="flex items-center">
+                            <button id="add-product-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 flex items-center"><svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>Tambah Produk</button>
+                            <button class="logout-btn text-sm text-gray-500 hover:text-indigo-600 ml-4">Logout</button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <section id="seller-page-dasbor" class="seller-page-section"></section>
+                        <section id="seller-page-produk" class="seller-page-section"></section>
+                        <section id="seller-page-pesanan" class="seller-page-section"></section>
+                        <section id="seller-page-pengaturan" class="seller-page-section"></section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="buyer-product-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden"></div>
+    <div id="seller-product-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden"></div>
+
+    <script>
+    // --- MOCK DATA & TEMPLATES ---
+    const APP_DATA = {
+        products: [
+            { id: 1, name: "Cangkir Keramik", price: "75.000", stock: 120, description: "Cangkir keramik buatan tangan dengan desain minimalis.", createObject: () => new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.5, 32), new THREE.MeshStandardMaterial({ color: 0x87CEEB })) },
+            { id: 2, name: "Lampu Meja Kayu", price: "250.000", stock: 45, description: "Lampu meja estetik dari kayu jati pilihan.", createObject: () => { const g = new THREE.Group(); g.add(new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.2, 32), new THREE.MeshStandardMaterial({ color: 0x8B4513 }))); const s = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.5, 32), new THREE.MeshStandardMaterial({ color: 0x8B4513 })); s.position.y = 1.25; g.add(s); const h = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.2, 1.5, 32), new THREE.MeshStandardMaterial({ color: 0xFFFACD, side: THREE.DoubleSide })); h.position.y = 2.5; g.add(h); g.scale.set(0.7, 0.7, 0.7); return g; } },
+            { id: 3, name: "Vas Bunga Modern", price: "120.000", stock: 70, description: "Vas bunga dengan bentuk geometris unik.", createObject: () => new THREE.Mesh(new THREE.TorusKnotGeometry(0.8, 0.2, 100, 16), new THREE.MeshStandardMaterial({ color: 0xE0E0E0, metalness: 0.2, roughness: 0.5 })) },
+            { id: 4, name: "Speaker Bluetooth", price: "350.000", stock: 30, description: "Speaker portabel berkualitas tinggi.", createObject: () => new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), new THREE.MeshStandardMaterial({ color: 0x333333 })) }
+        ],
+        orders: [
+            { id: 'TRD-001', customer: 'Budi Hartono', date: '2025-07-10', total: 120000, status: 'Diproses' },
+            { id: 'TRD-002', customer: 'Citra Lestari', date: '2025-07-10', total: 75000, status: 'Dikirim' },
+            { id: 'TRD-003', customer: 'Ahmad Yani', date: '2025-07-09', total: 350000, status: 'Selesai' }
+        ]
+    };
+
+    const TEMPLATES = {
+        buyerProductModal: (p) => `<div class="bg-white rounded-2xl shadow-2xl p-8 w-11/12 md:w-3/4 lg:w-1/2 max-w-4xl relative"><button class="close-modal-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div class="modal-canvas-container bg-gray-200 rounded-lg h-96"></div><div class="flex flex-col justify-center"><h2 class="text-3xl font-bold mb-2">${p.name}</h2><p class="text-2xl font-semibold text-indigo-600 mb-4">Rp ${p.price}</p><p class="text-gray-600 mb-6">${p.description}</p><button class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700">+ Tambah ke Keranjang</button></div></div></div>`,
+        sellerProductModal: () => `<div class="bg-white rounded-2xl shadow-2xl p-8 w-11/12 md:w-3/4 lg:w-2/3 max-w-4xl relative"><button class="close-modal-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button><h2 class="text-2xl font-bold mb-6">Tambah Produk Baru</h2><form><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div><div class="mb-4"><label class="block text-sm font-medium text-gray-700">Nama Produk</label><input type="text" required class="mt-1 w-full p-2 border rounded"></div><div class="mb-4"><label class="block text-sm font-medium text-gray-700">Deskripsi</label><textarea rows="4" required class="mt-1 w-full p-2 border rounded"></textarea></div><div class="grid grid-cols-2 gap-4"><div class="mb-4"><label class="block text-sm font-medium text-gray-700">Harga</label><input type="number" required class="mt-1 w-full p-2 border rounded"></div><div class="mb-4"><label class="block text-sm font-medium text-gray-700">Stok</label><input type="number" required class="mt-1 w-full p-2 border rounded"></div></div></div><div><div class="mb-4"><label class="block text-sm font-medium text-gray-700">File Gambar</label><input type="file" accept=".glb,.gltf" class="w-full text-sm"></div><div class="modal-canvas-container bg-gray-200 rounded-lg h-52"><p class="text-center text-gray-500 p-10">Pratinjau 3D</p></div></div></div><div class="mt-6 flex justify-end"><button type="button" class="close-modal-btn bg-gray-200 font-bold py-2 px-6 rounded-lg mr-4">Batal</button><button type="submit" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg">Simpan</button></div></form></div>`
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let active3D = {}; // To manage 3D scenes
+
+        // --- RENDER FUNCTIONS ---
+        function renderBuyerPages() {
+            // Beranda
+            document.getElementById('page-beranda').innerHTML = `<div class="text-center mb-16"><h2 class="text-4xl md:text-5xl font-extrabold mb-4">Jelajahi Produk UMKM Lokal</h2><p class="text-lg text-gray-600 max-w-2xl mx-auto">Rasakan pengalaman belanja baru dengan melihat produk dari setiap sudut dalam bentuk 3D.</p></div><div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>`;
+            const grid = document.getElementById('product-grid');
+            APP_DATA.products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-lg overflow-hidden flex flex-col';
+                card.innerHTML = `<div class="canvas-container h-52 cursor-grab" data-product-id="${p.id}"></div><div class="p-6 flex-grow flex flex-col"><h4 class="text-xl font-bold">${p.name}</h4><p class="text-lg font-semibold text-indigo-600">Rp ${p.price}</p><button class="view-detail-btn mt-auto w-full bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg" data-product-id="${p.id}">Lihat Detail 3D</button></div>`;
+                grid.appendChild(card);
+                active3D[`card-${p.id}`] = init3DViewer(card.querySelector('.canvas-container'), p.createObject, { zoom: false });
+            });
+            // Kategori
+            document.getElementById('page-kategori').innerHTML = `<div class="text-center mb-12"><h2 class="text-4xl font-extrabold text-gray-900">Telusuri Berdasarkan Kategori</h2></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"><div class="relative rounded-lg overflow-hidden group transform hover:-translate-y-2 h-64 shadow-lg"><img src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><h3 class="text-white text-2xl font-bold">Peralatan Dapur</h3></div></div><div class="relative rounded-lg overflow-hidden group transform hover:-translate-y-2 h-64 shadow-lg"><img src="https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=2127&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><h3 class="text-white text-2xl font-bold">Dekorasi Rumah</h3></div></div><div class="relative rounded-lg overflow-hidden group transform hover:-translate-y-2 h-64 shadow-lg"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><h3 class="text-white text-2xl font-bold">Aksesoris Fashion</h3></div></div><div class="relative rounded-lg overflow-hidden group transform hover:-translate-y-2 h-64 shadow-lg"><img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?q=80&w=2072&auto=format&fit=crop" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><h3 class="text-white text-2xl font-bold">Mainan Anak</h3></div></div></div>`;
+            // Keranjang
+            document.getElementById('page-keranjang').innerHTML = `<h2 class="text-4xl font-extrabold text-gray-900 mb-8">Keranjang Belanja Anda</h2><div class="grid grid-cols-1 lg:grid-cols-3 gap-8"><div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md"><div class="flex items-center border-b pb-4 mb-4"><img src="https://placehold.co/100x100/87CEEB/FFFFFF?text=Cangkir" class="w-24 h-24 object-cover rounded-md"><div class="flex-grow ml-4"><h3 class="font-bold text-lg">Cangkir Keramik</h3></div><div class="flex items-center mx-4"><button class="px-2 py-1 bg-gray-200 rounded-md">-</button><span class="px-4">1</span><button class="px-2 py-1 bg-gray-200 rounded-md">+</button></div><p class="font-semibold w-24 text-right">Rp 75.000</p></div><div class="flex items-center border-b pb-4 mb-4"><img src="https://placehold.co/100x100/8B4513/FFFFFF?text=Lampu" class="w-24 h-24 object-cover rounded-md"><div class="flex-grow ml-4"><h3 class="font-bold text-lg">Lampu Meja Kayu</h3></div><div class="flex items-center mx-4"><button class="px-2 py-1 bg-gray-200 rounded-md">-</button><span class="px-4">1</span><button class="px-2 py-1 bg-gray-200 rounded-md">+</button></div><p class="font-semibold w-24 text-right">Rp 250.000</p></div></div><div class="bg-white p-6 rounded-lg shadow-md h-fit"><h3 class="text-xl font-bold border-b pb-4 mb-4">Ringkasan Pesanan</h3><div class="flex justify-between mb-2"><span>Subtotal</span><span class="font-semibold">Rp 325.000</span></div><div class="flex justify-between mb-4"><span>Ongkos Kirim</span><span class="font-semibold">Rp 15.000</span></div><div class="flex justify-between font-bold text-lg border-t pt-4"><span>Total</span><span>Rp 340.000</span></div><button class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Lanjutkan ke Pembayaran</button></div></div>`;
+            // Tentang Kami
+            document.getElementById('page-tentang').innerHTML = `<div class="bg-white rounded-lg shadow-md p-12 text-center"><h2 class="text-4xl font-extrabold">Tentang Toko TriDi</h2><p class="mt-4 max-w-3xl mx-auto text-gray-600">Memberdayakan UMKM Lokal Melalui Teknologi 3D yang Imersif.</p></div>`;
+        }
+
+        function renderSellerPages() {
+            // Dasbor
+            document.getElementById('seller-page-dasbor').innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"><div class="bg-white p-6 rounded-lg shadow-md"><h4 class="text-gray-500 font-medium">Total Produk</h4><p class="text-3xl font-bold text-gray-800">${APP_DATA.products.length}</p></div><div class="bg-white p-6 rounded-lg shadow-md"><h4 class="text-gray-500 font-medium">Penjualan (Bulan Ini)</h4><p class="text-3xl font-bold text-gray-800">Rp 1.250.000</p></div><div class="bg-white p-6 rounded-lg shadow-md"><h4 class="text-gray-500 font-medium">Pesanan Baru</h4><p class="text-3xl font-bold text-gray-800">${APP_DATA.orders.length}</p></div><div class="bg-white p-6 rounded-lg shadow-md"><h4 class="text-gray-500 font-medium">Rating Toko</h4><p class="text-3xl font-bold text-gray-800 flex items-center">4.9 <svg class="h-6 w-6 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></p></div></div>`;
+            // Produk
+            document.getElementById('seller-page-produk').innerHTML = `<div class="bg-white rounded-lg shadow-md"><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-50"><th class="p-3 text-left">Nama</th><th class="p-3 text-left">Harga</th><th class="p-3 text-left">Stok</th></tr></thead><tbody>${APP_DATA.products.map(p => `<tr><td class="p-3">${p.name}</td><td class="p-3">Rp ${p.price}</td><td class="p-3">${p.stock}</td></tr>`).join('')}</tbody></table></div></div>`;
+            // Pesanan
+            document.getElementById('seller-page-pesanan').innerHTML = `<div class="bg-white rounded-lg shadow-md"><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-50"><th class="p-3 text-left">ID</th><th class="p-3 text-left">Pelanggan</th><th class="p-3 text-left">Total</th><th class="p-3 text-left">Status</th></tr></thead><tbody>${APP_DATA.orders.map(o => `<tr><td class="p-3 font-mono text-xs">${o.id}</td><td class="p-3">${o.customer}</td><td class="p-3">Rp ${o.total.toLocaleString('id-ID')}</td><td class="p-3"><span class="px-2 py-1 text-xs font-semibold rounded-full ${o.status === 'Selesai' ? 'bg-green-100 text-green-800' : (o.status === 'Dikirim' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}">${o.status}</span></td></tr>`).join('')}</tbody></table></div></div>`;
+            // Pengaturan
+            document.getElementById('seller-page-pengaturan').innerHTML = `<div class="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto"><h3 class="text-2xl font-bold mb-6">Pengaturan Toko</h3><form><div class="mb-4"><label class="block text-sm font-medium">Nama Toko</label><input type="text" value="Kriya Nusantara" class="mt-1 w-full p-2 border rounded"></div><div class="mb-4"><label class="block text-sm font-medium">Deskripsi</label><textarea rows="4" class="mt-1 w-full p-2 border rounded">Menjual kerajinan tangan otentik.</textarea></div><div class="flex justify-end"><button type="submit" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg">Simpan</button></div></form></div>`;
+        }
+
+        // --- NAVIGATION & VIEW SWITCHING ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            document.getElementById(`view-${viewName}`).style.display = 'block';
+            if (viewName === 'login') {
+                document.getElementById('bg-canvas').style.display = 'block';
+                if (!active3D.background) active3D.background = init3dBackground();
+            } else {
+                document.getElementById('bg-canvas').style.display = 'none';
+            }
+        }
+        function switchLoginView(viewName) {
+            document.querySelectorAll('.login-form-view').forEach(v => v.style.display = 'none');
+            document.getElementById(`${viewName}-form-view`).style.display = 'block';
+        }
+        function switchBuyerPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+            document.getElementById(`page-${pageId}`).style.display = 'block';
+            document.querySelectorAll('#buyer-nav .nav-link, #view-buyer header .nav-link[data-page="keranjang"]').forEach(l => {
+                l.classList.toggle('text-indigo-600', l.dataset.page === pageId);
+                l.classList.toggle('font-semibold', l.dataset.page === pageId);
+            });
+        }
+        function switchSellerPage(pageId) {
+            document.querySelectorAll('.seller-page-section').forEach(p => p.style.display = 'none');
+            document.getElementById(`seller-page-${pageId}`).style.display = 'block';
+            document.getElementById('seller-page-title').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+            document.querySelectorAll('#seller-nav .seller-nav-link').forEach(l => l.classList.toggle('sidebar-active', l.dataset.page === pageId));
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('click', (e) => {
+            // Login view switching
+            if (e.target.matches('[data-view]')) {
+                e.preventDefault();
+                switchLoginView(e.target.dataset.view);
+            }
+            // Login role switching
+            if (e.target.id === 'tab-pengguna' || e.target.id === 'tab-penjual') {
+                const role = e.target.id === 'tab-pengguna' ? 'pengguna' : 'penjual';
+                document.getElementById('login-button').dataset.role = role;
+                document.getElementById('tab-pengguna').classList.toggle('tab-active', role === 'pengguna');
+                document.getElementById('tab-pengguna').classList.toggle('tab-inactive', role !== 'pengguna');
+                document.getElementById('tab-penjual').classList.toggle('tab-active', role === 'penjual');
+                document.getElementById('tab-penjual').classList.toggle('tab-inactive', role !== 'penjual');
+            }
+            // Main login button
+            if (e.target.id === 'login-button') {
+                e.preventDefault();
+                const role = e.target.dataset.role || 'pengguna';
+                switchView(role === 'pengguna' ? 'buyer' : 'seller');
+            }
+            // Logout
+            if (e.target.matches('.logout-btn')) {
+                switchView('login');
+            }
+            // Buyer navigation
+            const buyerNavLink = e.target.closest('.nav-link');
+            if (buyerNavLink && e.target.closest('#view-buyer')) {
+                 e.preventDefault();
+                 switchBuyerPage(buyerNavLink.dataset.page);
+            }
+            // Seller navigation
+            if (e.target.closest('.seller-nav-link')) {
+                e.preventDefault();
+                switchSellerPage(e.target.closest('.seller-nav-link').dataset.page);
+            }
+            // Modals
+            if (e.target.matches('.view-detail-btn')) {
+                const productId = e.target.dataset.productId;
+                const product = APP_DATA.products.find(p => p.id == productId);
+                const modal = document.getElementById('buyer-product-modal');
+                modal.innerHTML = TEMPLATES.buyerProductModal(product);
+                modal.style.display = 'flex';
+                active3D.modal = init3DViewer(modal.querySelector('.modal-canvas-container'), product.createObject, { zoom: true });
+            }
+            if (e.target.id === 'add-product-btn') {
+                const modal = document.getElementById('seller-product-modal');
+                modal.innerHTML = TEMPLATES.sellerProductModal();
+                modal.style.display = 'flex';
+            }
+            // Close modal logic
+            const modalElement = e.target.closest('.fixed');
+            if (e.target.closest('.close-modal-btn') || (modalElement && e.target === modalElement)) {
+                 if (modalElement) {
+                    modalElement.style.display = 'none';
+                    if(active3D.modal) {
+                        active3D.modal.dispose();
+                        delete active3D.modal;
+                    }
+                 }
+            }
+        });
+
+        // --- 3D RENDERERS ---
+        function init3DViewer(container, objectCreator, options = { zoom: false }) {
+            if (!container) return null;
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf1f5f9);
+            const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 5;
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.innerHTML = '';
+            container.appendChild(renderer.domElement);
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.enableZoom = options.zoom;
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 7.5);
+            scene.add(dirLight);
+            scene.add(objectCreator());
+            let animationFrameId;
+            function animate() { animationFrameId = requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+            animate();
+            return { dispose: () => { cancelAnimationFrame(animationFrameId); renderer.dispose(); }};
+        }
+        function init3dBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas || canvas.dataset.initialized) return { dispose: () => {} };
+            canvas.dataset.initialized = 'true';
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 20;
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            const group = new THREE.Group();
+            scene.add(group);
+            const geometry = new THREE.IcosahedronGeometry(1, 0);
+            const materials = [ new THREE.MeshStandardMaterial({ color: 0x6366f1 }), new THREE.MeshStandardMaterial({ color: 0x818cf8 }), new THREE.MeshStandardMaterial({ color: 0xa5b4fc }) ];
+            for (let i = 0; i < 50; i++) {
+                const mesh = new THREE.Mesh(geometry, materials[Math.floor(Math.random() * materials.length)]);
+                mesh.position.set((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60);
+                mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                mesh.scale.setScalar(Math.random() * 2 + 0.5);
+                group.add(mesh);
+            }
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+            let animationFrameId;
+            function animate() { animationFrameId = requestAnimationFrame(animate); group.rotation.y += 0.0005; renderer.render(scene, camera); }
+            animate();
+            const onResize = () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            };
+            window.addEventListener('resize', onResize);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            return { dispose: () => { cancelAnimationFrame(animationFrameId); window.removeEventListener('resize', onResize); renderer.dispose(); }};
+        }
+
+        // --- INITIALIZATION ---
+        renderBuyerPages();
+        renderSellerPages();
+        switchView('login');
+        switchLoginView('login');
+        switchBuyerPage('beranda');
+        switchSellerPage('dasbor');
+    });
+    </script>
+</body>
+</html>
